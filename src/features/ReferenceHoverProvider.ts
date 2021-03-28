@@ -1,7 +1,6 @@
 import vscode from 'vscode';
 import fs from 'fs';
 import path from 'path';
-import semver from 'semver';
 
 import {
   containsImageExt,
@@ -45,15 +44,11 @@ export default class ReferenceHoverProvider implements vscode.HoverProvider {
         );
         const getContent = () => {
           if (containsImageExt(foundUri.fsPath)) {
-            if (semver.gt(vscode.version, '1.52.1')) {
-              return `Image preview is currently not supported with VSCode > **1.52.1** 😔. You version is **${vscode.version}**. See [this issue](https://github.com/svsool/vscode-memo/issues/306) for additional details.`;
-            }
-
-            if (isUncPath(foundUri.fsPath)) {
-              return 'UNC paths are not supported for images preview due to VSCode Content Security Policy. Use markdown preview or open image via cmd (ctrl) + click instead.';
-            }
-
-            return `![](${vscode.Uri.file(foundUri.fsPath).toString()}|height=${imageMaxHeight})`;
+            return `![${
+              isUncPath(foundUri.fsPath)
+                ? 'UNC paths are not supported for images preview due to VSCode Content Security Policy. Use markdown preview or open image via cmd (ctrl) + click instead.'
+                : ''
+            }](${vscode.Uri.file(foundUri.fsPath).toString()}|height=${imageMaxHeight})`;
           } else if (containsOtherKnownExts(foundUri.fsPath)) {
             const ext = path.parse(foundUri.fsPath).ext;
             return `Preview is not supported for "${ext}" file type. Click to open in the default app.`;
